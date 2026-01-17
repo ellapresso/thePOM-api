@@ -1,0 +1,41 @@
+{
+  "name": "thepomapi",
+  "version": "1.0.0",
+  "description": "ThePOM Backend API",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push",
+    "prisma:push:dev": "prisma db push --skip-generate",
+    "create-admin": "node src/scripts/create-initial-admin.js",
+    "session-cleanup": "node src/scripts/session-cleanup-cron.js",
+    "postdeploy": "npx prisma migrate deploy || npx prisma db push"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^4.18.2",
+    "@prisma/client": "^5.7.1",
+    "jsonwebtoken": "^9.0.2",
+    "express-session": "^1.17.3",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "pino": "^8.16.2",
+    "pino-pretty": "^10.2.3",
+    "express-validator": "^7.0.1",
+    "swagger-ui-express": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.1",
+    "nodemon": "^3.0.2"
+  }
+}
