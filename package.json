@@ -13,6 +13,7 @@
     "prisma:push": "prisma db push",
     "prisma:push:dev": "prisma db push --skip-generate",
     "create-admin": "node src/scripts/create-initial-admin.js",
+    "create-admin:railway": "node src/scripts/create-admin-railway.js",
     "session-cleanup": "node src/scripts/session-cleanup-cron.js",
     "postdeploy": "npx prisma migrate deploy || npx prisma db push"
   },

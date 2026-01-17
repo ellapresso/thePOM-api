@@ -15,25 +15,48 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Middleware
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:3000', 'http://localhost:3001'];
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['http://localhost:3000', 'http://localhost:3001'];
+
+// CORS 설정 로깅
+logger.info('CORS Configuration:', {
+    allowedOrigins,
+    nodeEnv: process.env.NODE_ENV,
+    corsOrigin: process.env.CORS_ORIGIN,
+});
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // origin이 없으면 (같은 도메인 요청) 허용
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // 프로덕션 환경에서는 허용된 origin만 허용
-      if (process.env.NODE_ENV === 'production') {
-        callback(new Error('Not allowed by CORS'));
-      } else {
-        callback(null, true); // 개발 환경에서는 모두 허용
-      }
-    }
-  },
-  credentials: true,
+    origin: function (origin, callback) {
+        // origin이 없으면 (같은 도메인 요청, Postman 등) 허용
+        if (!origin) {
+            logger.debug('CORS: No origin header (same-origin request)');
+            callback(null, true);
+            return;
+        }
+
+        // 허용된 origin 확인
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            logger.debug(`CORS: Allowed origin: ${origin}`);
+            callback(null, true);
+            return;
+        }
+
+        // 프로덕션 환경에서는 허용된 origin만 허용
+        if (process.env.NODE_ENV === 'production') {
+            logger.warn('CORS: Blocked request from origin:', {
+                origin,
+                allowedOrigins,
+                message: `Origin "${origin}" is not in the allowed list. Add it to CORS_ORIGIN environment variable.`,
+            });
+            callback(new Error('Not allowed by CORS'));
+        } else {
+            // 개발 환경에서는 모두 허용
+            logger.debug(`CORS: Allowing origin in development: ${origin}`);
+            callback(null, true);
+        }
+    },
+    credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,8 +65,8 @@ app.use(session(sessionConfig));
 
 // Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'ThePOM API Documentation',
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'ThePOM API Documentation',
 }));
 
 // Routes
@@ -71,15 +94,15 @@ app.use('/api/v1', require('./routes'));
  *                   example: Server is running
  */
 app.get('/health', (req, res) => {
-  res.status(200).json({ success: true, message: 'Server is running' });
+    res.status(200).json({ success: true, message: 'Server is running' });
 });
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({
-    success: false,
-    error: 'Route not found',
-  });
+    res.status(404).json({
+        success: false,
+        error: 'Route not found',
+    });
 });
 
 // Error handler
@@ -89,24 +112,24 @@ const PORT = process.env.PORT || 3000;
 const dbConnectionTest = require('./utils/dbConnectionTest');
 
 app.listen(PORT, async () => {
-  logger.info(`Server running on port ${PORT}`);
-  
-  // DB 연결 테스트 (서버 시작 시)
-  setTimeout(async () => {
-    try {
-      const connectionOk = await dbConnectionTest.testConnection();
-      if (connectionOk) {
-        await dbConnectionTest.checkPrismaClient();
-        await dbConnectionTest.checkAdminSessionTable();
-      }
-    } catch (err) {
-      logger.error('Database connection test failed:', err.message || err);
-    }
-  }, 2000); // 2초 후 실행
-  
-  // 주기적 세션 정리는 별도 cron job으로 실행
-  // 참고: src/scripts/session-cleanup-cron.js
-  logger.info('Session cleanup should be configured as a cron job. See src/scripts/session-cleanup-cron.js');
+    logger.info(`Server running on port ${PORT}`);
+
+    // DB 연결 테스트 (서버 시작 시)
+    setTimeout(async () => {
+        try {
+            const connectionOk = await dbConnectionTest.testConnection();
+            if (connectionOk) {
+                await dbConnectionTest.checkPrismaClient();
+                await dbConnectionTest.checkAdminSessionTable();
+            }
+        } catch (err) {
+            logger.error('Database connection test failed:', err.message || err);
+        }
+    }, 2000); // 2초 후 실행
+
+    // 주기적 세션 정리는 별도 cron job으로 실행
+    // 참고: src/scripts/session-cleanup-cron.js
+    logger.info('Session cleanup should be configured as a cron job. See src/scripts/session-cleanup-cron.js');
 });
 
 module.exports = app;

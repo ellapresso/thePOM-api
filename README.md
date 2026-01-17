@@ -70,6 +70,8 @@ npm run session-cleanup
 
 Railway에 배포하는 방법은 `RAILWAY-DEPLOYMENT.md`를 참고하세요.
 
+- 초기 관리자 계정 생성: `RAILWAY-ADMIN-SETUP.md`
+
 ## API 엔드포인트
 
 모든 API는 `/api/v1` 경로로 시작합니다.
