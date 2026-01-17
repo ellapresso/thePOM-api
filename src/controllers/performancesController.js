@@ -45,17 +45,26 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
     try {
-        const { title, startDate, endDate } = req.body;
+        const { title, startDate, endDate, sessions } = req.body;
 
         if (!title || !startDate || !endDate) {
             throw new BadRequestError('Title, start date, and end date are required');
         }
+
+        // 회차 데이터 준비
+        const sessionData = sessions && Array.isArray(sessions) ? sessions.map(session => ({
+            sessionDatetime: new Date(session.sessionDatetime),
+            note: session.note || null,
+        })) : [];
 
         const performance = await prisma.performance.create({
             data: {
                 title,
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
+                sessions: {
+                    create: sessionData,
+                },
             },
             include: {
                 sessions: true,
@@ -71,18 +80,44 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { title, startDate, endDate } = req.body;
+        const { title, startDate, endDate, sessions } = req.body;
 
         const updateData = {};
         if (title) updateData.title = title;
         if (startDate) updateData.startDate = new Date(startDate);
         if (endDate) updateData.endDate = new Date(endDate);
 
+        // 회차 정보 업데이트
+        if (sessions !== undefined && Array.isArray(sessions)) {
+            // 기존 회차 모두 삭제
+            await prisma.performanceSession.deleteMany({
+                where: { performanceId: parseInt(id) },
+            });
+
+            // 새로운 회차 생성
+            const sessionData = sessions
+                .filter(session => session.sessionDatetime)
+                .map(session => ({
+                    sessionDatetime: new Date(session.sessionDatetime),
+                    note: session.note || null,
+                }));
+
+            if (sessionData.length > 0) {
+                updateData.sessions = {
+                    create: sessionData,
+                };
+            }
+        }
+
         const performance = await prisma.performance.update({
             where: { id: parseInt(id) },
             data: updateData,
             include: {
-                sessions: true,
+                sessions: {
+                    orderBy: {
+                        sessionDatetime: 'asc',
+                    },
+                },
             },
         });
 
