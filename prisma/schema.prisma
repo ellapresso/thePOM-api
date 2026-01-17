@@ -16,14 +16,12 @@ model Member {
   birthDate       DateTime  @map("birth_date")
   phone           String?
   memberLevelId   Int       @map("member_level_id")
-  roleId          Int       @map("role_id")
   profileVisible  Boolean   @default(true) @map("profile_visible")
   firstJoinedAt   DateTime  @map("first_joined_at")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   memberLevel     MemberLevel           @relation(fields: [memberLevelId], references: [id])
-  role            Role                  @relation(fields: [roleId], references: [id])
   performanceMembers PerformanceMember[]
   membershipFeePayments MembershipFeePayment[]
   admins          Admin[]
@@ -51,7 +49,6 @@ model Role {
   name        String
   description String?
 
-  members     Member[]
   performanceMembers PerformanceMember[]
 
   @@map("roles")

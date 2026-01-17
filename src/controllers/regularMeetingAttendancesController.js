@@ -20,7 +20,6 @@ const getAll = async (req, res, next) => {
         member: {
           include: {
             memberLevel: true,
-            role: true,
           },
         },
       },
@@ -44,7 +43,6 @@ const getById = async (req, res, next) => {
         member: {
           include: {
             memberLevel: true,
-            role: true,
           },
         },
       },

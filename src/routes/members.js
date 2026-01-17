@@ -21,11 +21,6 @@ const auth = require('../middleware/auth');
  *         schema:
  *           type: integer
  *         description: 단원 레벨 ID로 필터링
- *       - in: query
- *         name: roleId
- *         schema:
- *           type: integer
- *         description: 역할 ID로 필터링
  *     responses:
  *       200:
  *         description: 단원 목록 조회 성공
@@ -98,8 +93,6 @@ router.get('/:id', membersController.getById);
  *                 type: string
  *               memberLevelId:
  *                 type: integer
- *               roleId:
- *                 type: integer
  *               profileVisible:
  *                 type: boolean
  *               firstJoinedAt:
@@ -143,8 +136,6 @@ router.post('/', auth.verifyToken, membersController.create);
  *               phone:
  *                 type: string
  *               memberLevelId:
- *                 type: integer
- *               roleId:
  *                 type: integer
  *               profileVisible:
  *                 type: boolean

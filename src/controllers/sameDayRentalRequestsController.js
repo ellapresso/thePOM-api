@@ -22,7 +22,6 @@ const getAll = async (req, res, next) => {
         applicantMember: {
           include: {
             memberLevel: true,
-            role: true,
           },
         },
         rentalSchedule: true,
@@ -46,7 +45,6 @@ const getById = async (req, res, next) => {
         applicantMember: {
           include: {
             memberLevel: true,
-            role: true,
           },
         },
         rentalSchedule: true,

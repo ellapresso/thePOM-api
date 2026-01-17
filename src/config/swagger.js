@@ -38,7 +38,6 @@ const options = {
             birthDate: { type: 'string', format: 'date-time' },
             phone: { type: 'string', nullable: true },
             memberLevelId: { type: 'integer' },
-            roleId: { type: 'integer' },
             profileVisible: { type: 'boolean' },
             firstJoinedAt: { type: 'string', format: 'date-time' },
             createdAt: { type: 'string', format: 'date-time' },

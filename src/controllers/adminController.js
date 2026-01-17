@@ -54,11 +54,11 @@ const login = async (req, res, next) => {
     );
 
     // JWT 만료 시간 계산 (초 단위를 밀리초로 변환)
-    const expiresInSeconds = expiresIn.includes('h') 
-      ? parseInt(expiresIn) * 60 * 60 
+    const expiresInSeconds = expiresIn.includes('h')
+      ? parseInt(expiresIn) * 60 * 60
       : expiresIn.includes('d')
-      ? parseInt(expiresIn) * 24 * 60 * 60
-      : parseInt(expiresIn);
+        ? parseInt(expiresIn) * 24 * 60 * 60
+        : parseInt(expiresIn);
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000);
 
     // 기존 세션 모두 무효화 (동시 로그인 방지)
@@ -129,7 +129,7 @@ const login = async (req, res, next) => {
 const logout = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1] || req.session?.token;
-    
+
     // DB에서 세션 삭제
     if (token) {
       await prisma.adminSession.deleteMany({
@@ -189,11 +189,10 @@ const getById = async (req, res, next) => {
     const { id } = req.params;
     const admin = await prisma.admin.findUnique({
       where: { id: parseInt(id) },
-      include: { 
+      include: {
         member: {
           include: {
             memberLevel: true,
-            role: true,
           },
         },
       },
