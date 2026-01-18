@@ -46,14 +46,19 @@ const create = async (req, res, next) => {
   try {
     const { memberLevelId, baseAmount, description } = req.body;
 
-    if (!memberLevelId || !baseAmount) {
+    if (!memberLevelId || baseAmount === undefined || baseAmount === null || baseAmount === '') {
       throw new BadRequestError('Member level ID and base amount are required');
+    }
+
+    const baseAmountNum = parseFloat(baseAmount);
+    if (isNaN(baseAmountNum) || baseAmountNum < 0) {
+      throw new BadRequestError('Base amount must be a valid number greater than or equal to 0');
     }
 
     const policy = await prisma.membershipFeePolicy.create({
       data: {
         memberLevelId: parseInt(memberLevelId),
-        baseAmount: parseFloat(baseAmount),
+        baseAmount: baseAmountNum,
         description,
       },
       include: {
