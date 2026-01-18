@@ -14,15 +14,36 @@ const getAll = async (req, res, next) => {
 
     const payments = await prisma.membershipFeePayment.findMany({
       where,
-      include: {
-        member: true,
-        memberLevel: true,
-        discounts: {
-          include: {
-            discountPolicy: true,
+      select: {
+        id: true,
+        memberId: true,
+        memberLevelId: true,
+        targetYear: true,
+        targetMonth: true,
+        originalAmount: true,
+        paidAmount: true,
+        paymentStatus: true,
+        paymentMethod: true,
+        paidAt: true,
+        note: true,
+        createdAt: true,
+        member: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        memberLevel: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
+      orderBy: [
+        { targetYear: 'desc' },
+        { targetMonth: 'desc' },
+      ],
     });
     res.status(200).json(payments);
   } catch (error) {

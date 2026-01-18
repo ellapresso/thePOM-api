@@ -11,33 +11,35 @@ datasource db {
 }
 
 model Member {
-  id              Int       @id @default(autoincrement())
-  name            String
-  birthDate       DateTime  @map("birth_date")
-  phone           String?
-  memberLevelId   Int       @map("member_level_id")
-  profileVisible  Boolean   @default(true) @map("profile_visible")
-  firstJoinedAt   DateTime  @map("first_joined_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id             Int      @id @default(autoincrement())
+  name           String
+  birthDate      DateTime @map("birth_date")
+  phone          String?
+  memberLevelId  Int      @map("member_level_id")
+  profileVisible Boolean  @default(true) @map("profile_visible")
+  firstJoinedAt  DateTime @map("first_joined_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  memberLevel     MemberLevel           @relation(fields: [memberLevelId], references: [id])
-  performanceMembers PerformanceMember[]
-  membershipFeePayments MembershipFeePayment[]
-  admins          Admin[]
-  regularMeetingAttendances RegularMeetingAttendance[]
-  regularMeetingSchedulesAsManager RegularMeetingSchedule[] @relation("MeetingManager")
-  sameDayRentalRequests SameDayRentalRequest[]
+  memberLevel                      MemberLevel                @relation(fields: [memberLevelId], references: [id])
+  performanceMembers               PerformanceMember[]
+  membershipFeePayments            MembershipFeePayment[]
+  admins                           Admin[]
+  regularMeetingAttendances        RegularMeetingAttendance[]
+  regularMeetingSchedulesAsManager RegularMeetingSchedule[]   @relation("MeetingManager")
+  sameDayRentalRequests            SameDayRentalRequest[]
 
+  @@index([name])
+  @@index([memberLevelId])
   @@map("members")
 }
 
 model MemberLevel {
-  id                Int       @id @default(autoincrement())
-  name              String
-  description       String?
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
 
-  members           Member[]
+  members               Member[]
   membershipFeePolicies MembershipFeePolicy[]
   membershipFeePayments MembershipFeePayment[]
 
@@ -45,8 +47,8 @@ model MemberLevel {
 }
 
 model Role {
-  id          Int       @id @default(autoincrement())
-  code        String    // ACTOR / STAFF / MANAGEMENT
+  id          Int     @id @default(autoincrement())
+  code        String // ACTOR / STAFF / MANAGEMENT
   name        String
   description String?
 
@@ -56,247 +58,261 @@ model Role {
 }
 
 model Performance {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   title     String
-  startDate DateTime  @map("start_date")
-  endDate   DateTime  @map("end_date")
-  createdAt DateTime  @default(now()) @map("created_at")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  sessions  PerformanceSession[]
+  sessions PerformanceSession[]
 
+  @@index([startDate])
+  @@index([endDate])
   @@map("performances")
 }
 
 model PerformanceSession {
-  id              Int       @id @default(autoincrement())
-  performanceId   Int       @map("performance_id")
-  sessionDatetime DateTime  @map("session_datetime")
+  id              Int      @id @default(autoincrement())
+  performanceId   Int      @map("performance_id")
+  sessionDatetime DateTime @map("session_datetime")
   note            String?
-  createdAt       DateTime  @default(now()) @map("created_at")
+  createdAt       DateTime @default(now()) @map("created_at")
 
-  performance     Performance        @relation(fields: [performanceId], references: [id])
+  performance        Performance         @relation(fields: [performanceId], references: [id])
   performanceMembers PerformanceMember[]
 
+  @@index([performanceId])
+  @@index([sessionDatetime])
   @@map("performance_sessions")
 }
 
 model PerformanceMember {
-  id                  Int       @id @default(autoincrement())
+  id                   Int     @id @default(autoincrement())
   performanceSessionId Int     @map("performance_session_id")
-  memberId            Int       @map("member_id")
-  roleId              Int       @map("role_id")
-  characterName       String?   @map("character_name")
+  memberId             Int     @map("member_id")
+  roleId               Int     @map("role_id")
+  characterName        String? @map("character_name")
 
-  performanceSession  PerformanceSession @relation(fields: [performanceSessionId], references: [id])
-  member              Member            @relation(fields: [memberId], references: [id])
-  role                Role              @relation(fields: [roleId], references: [id])
+  performanceSession PerformanceSession @relation(fields: [performanceSessionId], references: [id])
+  member             Member             @relation(fields: [memberId], references: [id])
+  role               Role               @relation(fields: [roleId], references: [id])
 
   @@map("performance_members")
 }
 
 model RentalSchedule {
-  id            Int       @id @default(autoincrement())
-  startDatetime DateTime  @map("start_datetime")
-  endDatetime   DateTime  @map("end_datetime")
-  renterType    String    @map("renter_type") // MEMBER / EXTERNAL
-  renterId      Int?      @map("renter_id")
-  renterName    String    @map("renter_name")
-  purpose       String?
-  note          String?
-  sourceRequestId Int?    @unique @map("source_request_id") // same_day_rental_requests.id
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  startDatetime   DateTime @map("start_datetime")
+  endDatetime     DateTime @map("end_datetime")
+  renterType      String   @map("renter_type") // MEMBER / EXTERNAL
+  renterId        Int?     @map("renter_id")
+  renterName      String   @map("renter_name")
+  purpose         String?
+  note            String?
+  sourceRequestId Int?     @unique @map("source_request_id") // same_day_rental_requests.id
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   payments      RentalPayment[]
   sourceRequest SameDayRentalRequest? @relation(fields: [sourceRequestId], references: [id])
 
+  @@index([startDatetime])
+  @@index([endDatetime])
+  @@index([renterType])
   @@map("rental_schedules")
 }
 
 model RentalPayment {
-  id              Int       @id @default(autoincrement())
-  rentalScheduleId Int      @map("rental_schedule_id")
-  originalAmount  Decimal   @map("original_amount") @db.Decimal(10, 2)
-  paidAmount      Decimal   @map("paid_amount") @db.Decimal(10, 2)
-  paymentMethod   String?   @map("payment_method")
-  paidAt          DateTime? @map("paid_at")
-  note            String?
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id               Int       @id @default(autoincrement())
+  rentalScheduleId Int       @map("rental_schedule_id")
+  originalAmount   Decimal   @map("original_amount") @db.Decimal(10, 2)
+  paidAmount       Decimal   @map("paid_amount") @db.Decimal(10, 2)
+  paymentMethod    String?   @map("payment_method")
+  paidAt           DateTime? @map("paid_at")
+  note             String?
+  createdAt        DateTime  @default(now()) @map("created_at")
 
-  rentalSchedule RentalSchedule @relation(fields: [rentalScheduleId], references: [id])
+  rentalSchedule RentalSchedule          @relation(fields: [rentalScheduleId], references: [id])
   discounts      RentalPaymentDiscount[]
 
   @@map("rental_payments")
 }
 
 model MembershipFeePolicy {
-  id            Int       @id @default(autoincrement())
-  memberLevelId Int       @map("member_level_id")
-  baseAmount    Decimal   @map("base_amount") @db.Decimal(10, 2)
+  id            Int      @id @default(autoincrement())
+  memberLevelId Int      @map("member_level_id")
+  baseAmount    Decimal  @map("base_amount") @db.Decimal(10, 2)
   description   String?
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  memberLevel   MemberLevel @relation(fields: [memberLevelId], references: [id])
+  memberLevel MemberLevel @relation(fields: [memberLevelId], references: [id])
 
   @@map("membership_fee_policies")
 }
 
 model MembershipFeePayment {
-  id              Int       @id @default(autoincrement())
-  memberId        Int       @map("member_id")
-  memberLevelId   Int       @map("member_level_id")
-  targetYear      Int       @map("target_year")
-  targetMonth     Int       @map("target_month")
-  originalAmount  Decimal   @map("original_amount") @db.Decimal(10, 2)
-  paidAmount      Decimal   @map("paid_amount") @db.Decimal(10, 2)
-  paymentStatus   String    @map("payment_status") // UNPAID / PARTIAL / PAID
-  paymentMethod   String?   @map("payment_method")
-  paidAt          DateTime? @map("paid_at")
-  note            String?
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id             Int       @id @default(autoincrement())
+  memberId       Int       @map("member_id")
+  memberLevelId  Int       @map("member_level_id")
+  targetYear     Int       @map("target_year")
+  targetMonth    Int       @map("target_month")
+  originalAmount Decimal   @map("original_amount") @db.Decimal(10, 2)
+  paidAmount     Decimal   @map("paid_amount") @db.Decimal(10, 2)
+  paymentStatus  String    @map("payment_status") // UNPAID / PARTIAL / PAID
+  paymentMethod  String?   @map("payment_method")
+  paidAt         DateTime? @map("paid_at")
+  note           String?
+  createdAt      DateTime  @default(now()) @map("created_at")
 
-  member          Member    @relation(fields: [memberId], references: [id])
-  memberLevel     MemberLevel @relation(fields: [memberLevelId], references: [id])
-  discounts       MembershipPaymentDiscount[]
+  member      Member                      @relation(fields: [memberId], references: [id])
+  memberLevel MemberLevel                 @relation(fields: [memberLevelId], references: [id])
+  discounts   MembershipPaymentDiscount[]
 
+  @@index([memberId])
+  @@index([memberLevelId])
+  @@index([targetYear, targetMonth])
+  @@index([paymentStatus])
   @@map("membership_fee_payments")
 }
 
 model DiscountPolicy {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   name          String
-  discountType  String    @map("discount_type") // RATE / FIXED
-  discountValue Decimal   @map("discount_value") @db.Decimal(10, 2)
+  discountType  String   @map("discount_type") // RATE / FIXED
+  discountValue Decimal  @map("discount_value") @db.Decimal(10, 2)
   description   String?
-  isActive      Boolean   @default(true) @map("is_active")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
 
-  rentalDiscounts      RentalPaymentDiscount[]
-  membershipDiscounts  MembershipPaymentDiscount[]
+  rentalDiscounts     RentalPaymentDiscount[]
+  membershipDiscounts MembershipPaymentDiscount[]
 
   @@map("discount_policies")
 }
 
 model RentalPaymentDiscount {
-  id              Int       @id @default(autoincrement())
-  rentalPaymentId Int       @map("rental_payment_id")
+  id               Int      @id @default(autoincrement())
+  rentalPaymentId  Int      @map("rental_payment_id")
   discountPolicyId Int      @map("discount_policy_id")
-  appliedAmount   Decimal   @map("applied_amount") @db.Decimal(10, 2)
-  createdAt       DateTime  @default(now()) @map("created_at")
+  appliedAmount    Decimal  @map("applied_amount") @db.Decimal(10, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
 
-  rentalPayment   RentalPayment @relation(fields: [rentalPaymentId], references: [id])
-  discountPolicy  DiscountPolicy @relation(fields: [discountPolicyId], references: [id])
+  rentalPayment  RentalPayment  @relation(fields: [rentalPaymentId], references: [id])
+  discountPolicy DiscountPolicy @relation(fields: [discountPolicyId], references: [id])
 
   @@map("rental_payment_discounts")
 }
 
 model MembershipPaymentDiscount {
-  id                    Int       @id @default(autoincrement())
-  membershipPaymentId   Int       @map("membership_payment_id")
-  discountPolicyId      Int       @map("discount_policy_id")
-  appliedAmount         Decimal   @map("applied_amount") @db.Decimal(10, 2)
-  createdAt             DateTime  @default(now()) @map("created_at")
+  id                  Int      @id @default(autoincrement())
+  membershipPaymentId Int      @map("membership_payment_id")
+  discountPolicyId    Int      @map("discount_policy_id")
+  appliedAmount       Decimal  @map("applied_amount") @db.Decimal(10, 2)
+  createdAt           DateTime @default(now()) @map("created_at")
 
-  membershipPayment     MembershipFeePayment @relation(fields: [membershipPaymentId], references: [id])
-  discountPolicy        DiscountPolicy @relation(fields: [discountPolicyId], references: [id])
+  membershipPayment MembershipFeePayment @relation(fields: [membershipPaymentId], references: [id])
+  discountPolicy    DiscountPolicy       @relation(fields: [discountPolicyId], references: [id])
 
   @@map("membership_payment_discounts")
 }
 
 model Admin {
-  id            Int       @id @default(autoincrement())
-  loginId       String    @unique @map("login_id")
-  passwordHash  String    @map("password_hash")
-  name          String
-  adminType     String    @map("admin_type") // SYSTEM / NORMAL
-  memberId      Int?      @map("member_id")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-  deletedAt     DateTime? @map("deleted_at")
+  id           Int       @id @default(autoincrement())
+  loginId      String    @unique @map("login_id")
+  passwordHash String    @map("password_hash")
+  name         String
+  adminType    String    @map("admin_type") // SYSTEM / NORMAL
+  memberId     Int?      @map("member_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
-  member        Member?   @relation(fields: [memberId], references: [id])
-  loginLogs     AdminLoginLog[]
-  sessions      AdminSession[]
+  member    Member?         @relation(fields: [memberId], references: [id])
+  loginLogs AdminLoginLog[]
+  sessions  AdminSession[]
 
   @@map("admins")
 }
 
 model AdminLoginLog {
-  id        Int       @id @default(autoincrement())
-  adminId   Int       @map("admin_id")
-  loginAt   DateTime  @default(now()) @map("login_at")
-  ipAddress String?   @map("ip_address")
-  userAgent String?   @map("user_agent")
-  success   Boolean   @default(false)
+  id        Int      @id @default(autoincrement())
+  adminId   Int      @map("admin_id")
+  loginAt   DateTime @default(now()) @map("login_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  success   Boolean  @default(false)
 
-  admin     Admin     @relation(fields: [adminId], references: [id])
+  admin Admin @relation(fields: [adminId], references: [id])
 
   @@map("admin_login_logs")
 }
 
 model AdminSession {
-  id            Int       @id @default(autoincrement())
-  adminId       Int       @map("admin_id")
-  token         String    @unique
-  ipAddress     String?   @map("ip_address")
-  userAgent     String?   @map("user_agent")
-  expiresAt     DateTime  @map("expires_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
+  id             Int      @id @default(autoincrement())
+  adminId        Int      @map("admin_id")
+  token          String   @unique
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  expiresAt      DateTime @map("expires_at")
+  createdAt      DateTime @default(now()) @map("created_at")
   lastAccessedAt DateTime @default(now()) @updatedAt @map("last_accessed_at")
 
-  admin         Admin     @relation(fields: [adminId], references: [id])
+  admin Admin @relation(fields: [adminId], references: [id])
 
-  @@map("admin_sessions")
   @@index([adminId])
   @@index([token])
   @@index([expiresAt])
+  @@map("admin_sessions")
 }
 
 model RegularMeetingSchedule {
-  id          Int       @id @default(autoincrement())
-  meetingName String    @map("meeting_name")
-  meetingDate DateTime  @db.Date @map("meeting_date")
-  startTime   DateTime  @db.Time @map("start_time")
-  endTime     DateTime  @db.Time @map("end_time")
-  managerId   Int?      @map("manager_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id          Int      @id @default(autoincrement())
+  meetingName String   @map("meeting_name")
+  meetingDate DateTime @map("meeting_date") @db.Date
+  startTime   DateTime @map("start_time") @db.Time
+  endTime     DateTime @map("end_time") @db.Time
+  managerId   Int?     @map("manager_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
-  manager     Member?   @relation("MeetingManager", fields: [managerId], references: [id])
+  manager     Member?                    @relation("MeetingManager", fields: [managerId], references: [id])
   attendances RegularMeetingAttendance[]
 
+  @@index([meetingDate])
+  @@index([managerId])
   @@map("regular_meeting_schedules")
 }
 
 model RegularMeetingAttendance {
-  id                        Int       @id @default(autoincrement())
-  regularMeetingScheduleId  Int       @map("regular_meeting_schedule_id")
-  memberId                  Int       @map("member_id")
-  attendanceStatus           String    @map("attendance_status") // attended / absent / late
-  memo                      String?   @map("memo")
-  createdAt                 DateTime  @default(now()) @map("created_at")
+  id                       Int      @id @default(autoincrement())
+  regularMeetingScheduleId Int      @map("regular_meeting_schedule_id")
+  memberId                 Int      @map("member_id")
+  attendanceStatus         String   @map("attendance_status") // attended / absent / late
+  memo                     String?  @map("memo")
+  createdAt                DateTime @default(now()) @map("created_at")
 
-  regularMeetingSchedule    RegularMeetingSchedule @relation(fields: [regularMeetingScheduleId], references: [id])
-  member                    Member                 @relation(fields: [memberId], references: [id])
+  regularMeetingSchedule RegularMeetingSchedule @relation(fields: [regularMeetingScheduleId], references: [id])
+  member                 Member                 @relation(fields: [memberId], references: [id])
 
+  @@index([regularMeetingScheduleId])
+  @@index([memberId])
   @@map("regular_meeting_attendances")
 }
 
 model SameDayRentalRequest {
-  id                  Int       @id @default(autoincrement())
-  applicantMemberId   Int       @map("applicant_member_id")
-  requestedAt         DateTime  @map("requested_at")
-  rentalDate         DateTime  @db.Date @map("rental_date")
-  rentalStartTime    DateTime  @db.Time @map("rental_start_time")
-  rentalEndTime      DateTime  @db.Time @map("rental_end_time")
-  status             String    @default("pending") // pending / approved / rejected
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id                Int      @id @default(autoincrement())
+  applicantMemberId Int      @map("applicant_member_id")
+  requestedAt       DateTime @map("requested_at")
+  rentalDate        DateTime @map("rental_date") @db.Date
+  rentalStartTime   DateTime @map("rental_start_time") @db.Time
+  rentalEndTime     DateTime @map("rental_end_time") @db.Time
+  status            String   @default("pending") // pending / approved / rejected
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
-  applicantMember     Member                 @relation(fields: [applicantMemberId], references: [id])
-  rentalSchedule     RentalSchedule?
+  applicantMember Member          @relation(fields: [applicantMemberId], references: [id])
+  rentalSchedule  RentalSchedule?
 
   @@map("same_day_rental_requests")
 }
-

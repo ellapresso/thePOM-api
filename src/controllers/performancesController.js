@@ -4,8 +4,20 @@ const { NotFoundError, BadRequestError } = require('../errors');
 const getAll = async (req, res, next) => {
     try {
         const performances = await prisma.performance.findMany({
-            include: {
-                sessions: true,
+            select: {
+                id: true,
+                title: true,
+                startDate: true,
+                endDate: true,
+                createdAt: true,
+                _count: {
+                    select: {
+                        sessions: true,
+                    },
+                },
+            },
+            orderBy: {
+                startDate: 'desc',
             },
         });
         res.status(200).json(performances);

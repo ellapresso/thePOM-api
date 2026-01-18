@@ -12,11 +12,24 @@ const getAll = async (req, res, next) => {
 
     const schedules = await prisma.regularMeetingSchedule.findMany({
       where,
-      include: {
-        manager: true,
-        attendances: {
-          include: {
-            member: true,
+      select: {
+        id: true,
+        meetingName: true,
+        meetingDate: true,
+        startTime: true,
+        endTime: true,
+        managerId: true,
+        createdAt: true,
+        updatedAt: true,
+        manager: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            attendances: true,
           },
         },
       },
@@ -97,13 +110,23 @@ const update = async (req, res, next) => {
     if (meetingDate !== undefined) {
       updateData.meetingDate = new Date(meetingDate);
     }
-    if (startTime !== undefined) {
-      const date = meetingDate || (await prisma.regularMeetingSchedule.findUnique({ where: { id: parseInt(id) } }))?.meetingDate;
-      updateData.startTime = new Date(`${date}T${startTime}`);
-    }
-    if (endTime !== undefined) {
-      const date = meetingDate || (await prisma.regularMeetingSchedule.findUnique({ where: { id: parseInt(id) } }))?.meetingDate;
-      updateData.endTime = new Date(`${date}T${endTime}`);
+    if (startTime !== undefined || endTime !== undefined) {
+      // meetingDate가 없으면 기존 데이터 조회 (한 번만)
+      let currentSchedule = null;
+      if (!meetingDate) {
+        currentSchedule = await prisma.regularMeetingSchedule.findUnique({
+          where: { id: parseInt(id) },
+          select: { meetingDate: true },
+        });
+      }
+      const date = meetingDate || currentSchedule?.meetingDate;
+      
+      if (startTime !== undefined && date) {
+        updateData.startTime = new Date(`${date}T${startTime}`);
+      }
+      if (endTime !== undefined && date) {
+        updateData.endTime = new Date(`${date}T${endTime}`);
+      }
     }
     if (managerId !== undefined) {
       updateData.managerId = managerId ? parseInt(managerId) : null;

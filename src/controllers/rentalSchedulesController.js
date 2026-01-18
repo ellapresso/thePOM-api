@@ -21,9 +21,6 @@ const getAll = async (req, res, next) => {
 
         const schedules = await prisma.rentalSchedule.findMany({
             where,
-            include: {
-                payments: true,
-            },
             orderBy: {
                 startDatetime: 'asc',
             },
