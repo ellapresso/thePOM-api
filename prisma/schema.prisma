@@ -26,6 +26,7 @@ model Member {
   membershipFeePayments MembershipFeePayment[]
   admins          Admin[]
   regularMeetingAttendances RegularMeetingAttendance[]
+  regularMeetingSchedulesAsManager RegularMeetingSchedule[] @relation("MeetingManager")
   sameDayRentalRequests SameDayRentalRequest[]
 
   @@map("members")
@@ -258,9 +259,11 @@ model RegularMeetingSchedule {
   meetingDate DateTime  @db.Date @map("meeting_date")
   startTime   DateTime  @db.Time @map("start_time")
   endTime     DateTime  @db.Time @map("end_time")
+  managerId   Int?      @map("manager_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
+  manager     Member?   @relation("MeetingManager", fields: [managerId], references: [id])
   attendances RegularMeetingAttendance[]
 
   @@map("regular_meeting_schedules")

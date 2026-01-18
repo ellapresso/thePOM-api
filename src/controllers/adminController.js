@@ -17,16 +17,13 @@ const login = async (req, res, next) => {
       include: { member: true },
     });
 
-    if (!admin || admin.deletedAt) {
-      // 로그인 실패 로그 기록
-      await prisma.adminLoginLog.create({
-        data: {
-          adminId: 0, // 존재하지 않는 관리자
-          success: false,
-          ipAddress: req.clientIp || req.ip,
-          userAgent: req.get('user-agent'),
-        },
-      });
+    if (!admin) {
+      logger.warn(`Login attempt with non-existent loginId: ${loginId}`);
+      throw new UnauthorizedError('Invalid credentials');
+    }
+
+    if (admin.deletedAt) {
+      logger.warn(`Login attempt with deleted admin: ${loginId}`);
       throw new UnauthorizedError('Invalid credentials');
     }
 

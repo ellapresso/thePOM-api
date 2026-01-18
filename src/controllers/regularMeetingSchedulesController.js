@@ -13,6 +13,7 @@ const getAll = async (req, res, next) => {
     const schedules = await prisma.regularMeetingSchedule.findMany({
       where,
       include: {
+        manager: true,
         attendances: {
           include: {
             member: true,
@@ -35,6 +36,7 @@ const getById = async (req, res, next) => {
     const schedule = await prisma.regularMeetingSchedule.findUnique({
       where: { id: parseInt(id) },
       include: {
+        manager: true,
         attendances: {
           include: {
             member: true,
@@ -55,7 +57,7 @@ const getById = async (req, res, next) => {
 
 const create = async (req, res, next) => {
   try {
-    const { meetingName, meetingDate, startTime, endTime } = req.body;
+    const { meetingName, meetingDate, startTime, endTime, managerId } = req.body;
 
     if (!meetingName || !meetingDate || !startTime || !endTime) {
       throw new BadRequestError('Meeting name, date, start time, and end time are required');
@@ -72,6 +74,10 @@ const create = async (req, res, next) => {
         meetingDate: meetingDateTime,
         startTime: startDateTime,
         endTime: endDateTime,
+        managerId: managerId ? parseInt(managerId) : null,
+      },
+      include: {
+        manager: true,
       },
     });
 
@@ -84,7 +90,7 @@ const create = async (req, res, next) => {
 const update = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { meetingName, meetingDate, startTime, endTime } = req.body;
+    const { meetingName, meetingDate, startTime, endTime, managerId } = req.body;
 
     const updateData = {};
     if (meetingName !== undefined) updateData.meetingName = meetingName;
@@ -99,10 +105,16 @@ const update = async (req, res, next) => {
       const date = meetingDate || (await prisma.regularMeetingSchedule.findUnique({ where: { id: parseInt(id) } }))?.meetingDate;
       updateData.endTime = new Date(`${date}T${endTime}`);
     }
+    if (managerId !== undefined) {
+      updateData.managerId = managerId ? parseInt(managerId) : null;
+    }
 
     const schedule = await prisma.regularMeetingSchedule.update({
       where: { id: parseInt(id) },
       data: updateData,
+      include: {
+        manager: true,
+      },
     });
 
     res.status(200).json(schedule);

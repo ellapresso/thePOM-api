@@ -14,6 +14,7 @@
     "prisma:push:dev": "prisma db push --skip-generate",
     "create-admin": "node src/scripts/create-initial-admin.js",
     "create-admin:railway": "node src/scripts/create-admin-railway.js",
+    "check-admin": "node src/scripts/check-admin.js",
     "reset-admin-password": "node src/scripts/reset-admin-password.js",
     "create-roles": "node src/scripts/create-initial-roles.js",
     "session-cleanup": "node src/scripts/session-cleanup-cron.js",
