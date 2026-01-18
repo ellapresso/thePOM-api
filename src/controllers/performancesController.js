@@ -52,10 +52,27 @@ const create = async (req, res, next) => {
         }
 
         // 회차 데이터 준비
-        const sessionData = sessions && Array.isArray(sessions) ? sessions.map(session => ({
-            sessionDatetime: new Date(session.sessionDatetime),
-            note: session.note || null,
-        })) : [];
+        const sessionData = sessions && Array.isArray(sessions) ? sessions.map(session => {
+            const sessionObj = {
+                sessionDatetime: new Date(session.sessionDatetime),
+                note: session.note || null,
+            };
+
+            // 회차별 배우 정보 추가
+            if (session.members && Array.isArray(session.members) && session.members.length > 0) {
+                sessionObj.performanceMembers = {
+                    create: session.members
+                        .filter(member => member.memberId && member.roleId)
+                        .map(member => ({
+                            memberId: parseInt(member.memberId),
+                            roleId: parseInt(member.roleId),
+                            characterName: member.characterName || null,
+                        })),
+                };
+            }
+
+            return sessionObj;
+        }) : [];
 
         const performance = await prisma.performance.create({
             data: {
@@ -67,7 +84,16 @@ const create = async (req, res, next) => {
                 },
             },
             include: {
-                sessions: true,
+                sessions: {
+                    include: {
+                        performanceMembers: {
+                            include: {
+                                member: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -89,7 +115,7 @@ const update = async (req, res, next) => {
 
         // 회차 정보 업데이트
         if (sessions !== undefined && Array.isArray(sessions)) {
-            // 기존 회차 모두 삭제
+            // 기존 회차 모두 삭제 (PerformanceMember도 cascade로 삭제됨)
             await prisma.performanceSession.deleteMany({
                 where: { performanceId: parseInt(id) },
             });
@@ -97,10 +123,27 @@ const update = async (req, res, next) => {
             // 새로운 회차 생성
             const sessionData = sessions
                 .filter(session => session.sessionDatetime)
-                .map(session => ({
-                    sessionDatetime: new Date(session.sessionDatetime),
-                    note: session.note || null,
-                }));
+                .map(session => {
+                    const sessionObj = {
+                        sessionDatetime: new Date(session.sessionDatetime),
+                        note: session.note || null,
+                    };
+
+                    // 회차별 배우 정보 추가
+                    if (session.members && Array.isArray(session.members) && session.members.length > 0) {
+                        sessionObj.performanceMembers = {
+                            create: session.members
+                                .filter(member => member.memberId && member.roleId)
+                                .map(member => ({
+                                    memberId: parseInt(member.memberId),
+                                    roleId: parseInt(member.roleId),
+                                    characterName: member.characterName || null,
+                                })),
+                        };
+                    }
+
+                    return sessionObj;
+                });
 
             if (sessionData.length > 0) {
                 updateData.sessions = {
@@ -116,6 +159,14 @@ const update = async (req, res, next) => {
                 sessions: {
                     orderBy: {
                         sessionDatetime: 'asc',
+                    },
+                    include: {
+                        performanceMembers: {
+                            include: {
+                                member: true,
+                                role: true,
+                            },
+                        },
                     },
                 },
             },

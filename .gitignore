@@ -88,4 +88,4 @@ ecosystem.config.js
 # Local development
 .local/
 local/
-
+scripts/
